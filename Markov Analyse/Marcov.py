@@ -1,31 +1,37 @@
 import linecache
 import nltk
 
-def lines_to_list(article):
-	retlist = []
-	for line in article:
-		linetoken = nltk.word_tokenize(line)
-		retlist += linetoken
-	return retlist
+def file_tokenize(filename,savefilename):
+	word = linecache.getlines(filename)
+	fw = open(savefilename,'w')
+	for line in word:
+		line = nltk.word_tokenize(line)
+		for i in line:
+			fw.write(i+'\n')
+	fw.close()
+	return savefilename
 
-GLUE = '_+_'
-def glue_word(word1,word2):
-	return word1+GLUE+word2
+class glue:
+	def __init__(self):
+		self.GLUE = '_+_'
+	def glue_word(self,word1,word2):
+		return word1+self.GLUE+word2
 
-def cut_glue(word):
-	index = word.find(GLUE)
-	word1 = word[:index]
-	word2 = word[index+len(GLUE):]
-	return [word1,word2]
+	def cut_glue(self,word):
+		index = word.find(self.GLUE)
+		word1 = word[:index]
+		word2 = word[index+len(self.GLUE):]
+		return [word1,word2]
 
 class marcov_create:
-	def __init__(self,words):
+	def __init__(self,filename):
+		words = linecache.getlines(filename)
 		self.HASH = { }
 		self.HASH_key_freq_dict = { }
 		words.append('EOF')#'/n' as EOF
 		for i in range(len(words)-2):
-			key = glue_word(words[i],words[i+1])
-			next_word = words[i+2]
+			key = glue().glue_word(words[i][:-1],words[i+1][:-1])
+			next_word = words[i+2][:-1]
 			if key not in self.HASH:
 				self.HASH_key_freq_dict[key] = 1
 				self.HASH[key] = { next_word : 1 }
@@ -40,28 +46,37 @@ class dicsort:
 	def __init__(self,diction):
 		self.diction = diction
 		self.keylist = diction.keys()
-	def dicqsort(self,top,end):
-		pass
-	def quicksort(self,ls,tail):
-		if tail<0:
-			return []
-		if tail ==0 :
-			return ls
-		flag = ls[0]
-		i = 0 ; j = tail
+		self.qsort_list = [  ]
+		self.qsort_stack = [  ]
+	def quicksort(self,top,end):
+		if top > end:
+			return
+		flag = self.qsort_list[top] ; i = top ; j = end
 		while(i<j):
-			while(i<j and ls[j]>=flag):
+			while(i<j and self.diction[self.qsort_list[j]]<=self.diction[flag]):
 				j-=1
-			ls[i] = ls[j]
-			while(i<j and ls[i]<=flag):
+			self.qsort_list[i] = self.qsort_list[j]
+			while(i<j and self.diction[self.qsort_list[i]]>=self.diction[flag]):
 				i+=1
-			ls[j] = ls[i]
-		ls[i] = flag
-		ret_left = self.quicksort(ls[0:i],i-1)
-		ret_right = self.quicksort(ls[i:],tail-i)
-		return ret_left+[flag]+ret_right
+			self.qsort_list[j] = self.qsort_list[i]
+		self.qsort_list[i] = flag
+		self.qsort_stack.append( [ top, i-1 ] )
+		self.qsort_stack.append( [ i+1, end ] )
+		#self.quicksort(top,i-1)
+		#self.quicksort(i+1,end)
 	def qsort(self):
-		return self.quicksort(self.keylist,len(self.keylist)-1)
+		self.qsort_list = self.keylist
+		self.qsort_stack.append([0,len(self.keylist)-1])
+		count = 0
+		while ( self.qsort_stack != [ ] ):
+			top_end = self.qsort_stack.pop()
+			top = top_end[0]
+			end = top_end[1]
+			self.quicksort( top , end )
+			count+=1
+			if count%5000==0:
+				print count
+		return self.qsort_list
 	def insertsort(self):
 		if self.keylist == []:
 			return []
@@ -95,7 +110,7 @@ def HASH_list_to_file(HASH_list,HASH_key_freq_dict,threshould_val = 5):
 		key_freq = HASH_key_freq_dict[key]
 		if key_freq < threshould_val:
 			continue
-		fw.write(key+'|')
+		fw.write('\n'+key+'|')
 		fw.write(str(key_freq)+'|')
 		for word in HASH_list[key]:
 			fw.write(str(word)+'|')
@@ -104,36 +119,38 @@ def HASH_list_to_file(HASH_list,HASH_key_freq_dict,threshould_val = 5):
 
 def HASH_list_to_file_sort(HASH_list,HASH_key_freq_dict,threshould_val = 5):
 	filename = 'Marcov_HASH.txt'
-	sorted_key_list = dicsort(HASH_key_freq_dict).insertsort()
-	print 'sort finish!',
+	del_list = [ ]
+	for i in HASH_key_freq_dict:
+		if HASH_key_freq_dict[i] <= threshould_val:
+			del_list.append(i)
+	for i in del_list:
+		del(HASH_key_freq_dict[i])
+	#I must del it first
+	sorted_key_list = dicsort(HASH_key_freq_dict).qsort()
 	fw = open(filename,'w')
 	for key in sorted_key_list:
 		key_freq = HASH_key_freq_dict[key]
 		if key_freq < threshould_val:
 			continue
-		fw.write(key+'|'+str(key_freq)+'|')
+		fw.write('\n'+key+'|'+str(key_freq)+'|')
 		for word in HASH_list[key]:
 			fw.write(str(word)+'|')
 		fw.write('\n')
 	fw.close()
 
-dictst1 = {'a':12,'b':7,'c':55,'d':7,'e':23}
-dictst2 = {}
+#dictst1 = {'a':12,'b':7,'c':55,'d':7,'e':23}
+#print dicsort(dictst1).qsort()
 
-sort1 = dicsort(dictst1).qsort()
-sort2 = dicsort(dictst2).qsort()
-
-if __name__ == '__yeze__':
+if __name__ == '__main__':
 	filename = 'The_Holy_Bible.txt'
-	article = linecache.getlines(filename)
-	print 1,
-	words = lines_to_list(article) #this is slowest
-	print 2,
-	HASH = marcov_create(words).HASH
-	print 3,
-	HASH_key_freq_dict = marcov_create(words).HASH_key_freq_dict
-	print 4,
+	savefilename = 'The_Holy_Bible_tokenize.txt'
+	#savefilename = file_tokenize(filename,savefilename)
+	print 1
+	marcov = marcov_create(savefilename)
+	HASH = marcov.HASH
+	print 2
+	HASH_key_freq_dict = marcov.HASH_key_freq_dict
+	print 3
 	HASH_list = HASH_to_HASH_list(HASH)
-	print 5,
-	HASH_list_to_file(HASH_list,HASH_key_freq_dict)
-	print 6
+	print 4
+	HASH_list_to_file_sort(HASH_list,HASH_key_freq_dict,10)
