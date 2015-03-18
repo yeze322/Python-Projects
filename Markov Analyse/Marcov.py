@@ -110,21 +110,25 @@ def HASH_list_to_file(HASH_list,HASH_key_freq_dict,threshould_val = 5):
 		key_freq = HASH_key_freq_dict[key]
 		if key_freq < threshould_val:
 			continue
-		fw.write('\n'+key+'|')
+		fw.write(key+'|')
 		fw.write(str(key_freq)+'|')
 		for word in HASH_list[key]:
 			fw.write(str(word)+'|')
 		fw.write('\n')
 	fw.close()
 
-def HASH_list_to_file_sort(HASH_list,HASH_key_freq_dict,threshould_val = 5):
-	filename = 'Marcov_HASH.txt'
+def HASH_Freq_Filter(HASH_key_freq_dict,threshould_val=5):
 	del_list = [ ]
 	for i in HASH_key_freq_dict:
 		if HASH_key_freq_dict[i] <= threshould_val:
 			del_list.append(i)
 	for i in del_list:
 		del(HASH_key_freq_dict[i])
+	return HASH_key_freq_dict
+
+def HASH_list_to_file_sort(HASH_list,HASH_key_freq_dict,threshould_val = 5):
+	filename = 'Marcov_HASH.txt'
+	HASH_key_freq_dict = HASH_Freq_Filter(HASH_key_freq_dict,threshould_val)
 	#I must del it first
 	sorted_key_list = dicsort(HASH_key_freq_dict).qsort()
 	fw = open(filename,'w')
@@ -132,10 +136,11 @@ def HASH_list_to_file_sort(HASH_list,HASH_key_freq_dict,threshould_val = 5):
 		key_freq = HASH_key_freq_dict[key]
 		if key_freq < threshould_val:
 			continue
-		fw.write('\n'+key+'|'+str(key_freq)+'|')
+		fw.write(key+'|'+str(key_freq)+'|')
 		for word in HASH_list[key]:
 			fw.write(str(word)+'|')
 		fw.write('\n')
+	print len(HASH_key_freq_dict)
 	fw.close()
 
 #dictst1 = {'a':12,'b':7,'c':55,'d':7,'e':23}
@@ -153,4 +158,6 @@ if __name__ == '__main__':
 	print 3
 	HASH_list = HASH_to_HASH_list(HASH)
 	print 4
-	HASH_list_to_file_sort(HASH_list,HASH_key_freq_dict,10)
+	for i in range(100,150):
+		print i,len(HASH_Freq_Filter(HASH_key_freq_dict,i))
+	#HASH_list_to_file_sort(HASH_list,HASH_key_freq_dict,9)
