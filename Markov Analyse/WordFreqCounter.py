@@ -10,14 +10,41 @@ def gethash(word):
 	if index<0 or index>25:
 		return -1
 	return index
+
 class dicsort:
 	def __init__(self,diction):
 		self.diction = diction
 		self.keylist = diction.keys()
-	def dicqsort(self,top,end):
-		pass
-	def insertsort_list(self): #[ 'helo',2,'word',4,..]
-		pass
+		self.qsort_list = [  ]
+		self.qsort_stack = [  ]
+	def __quicksort__(self,top,end):
+		if top > end:
+			return
+		flag = self.qsort_list[top] ; i = top ; j = end
+		while(i<j):
+			while(i<j and self.diction[self.qsort_list[j]]<=self.diction[flag]):
+				j-=1
+			self.qsort_list[i] = self.qsort_list[j]
+			while(i<j and self.diction[self.qsort_list[i]]>=self.diction[flag]):
+				i+=1
+			self.qsort_list[j] = self.qsort_list[i]
+		self.qsort_list[i] = flag
+		self.qsort_stack.append( [ top, i-1 ] )
+		self.qsort_stack.append( [ i+1, end ] )
+	def qsort(self):
+		self.qsort_list = self.keylist
+		self.qsort_stack.append([0,len(self.keylist)-1])
+		#count = 0
+		while ( self.qsort_stack != [ ] ):
+			top_end = self.qsort_stack.pop()
+			top = top_end[0]
+			end = top_end[1]
+			self.__quicksort__( top , end )
+			#count+=1
+			#if count%5000==0:
+			#	print count
+		return self.qsort_list
+	
 	def insertsort(self):
 		if self.keylist == []:
 			return []
@@ -32,6 +59,7 @@ class dicsort:
 			if judge == 0:
 				newlist.append(i)			
 		return newlist
+
 
 #tstdic = {'lkjlj':2,"asd":34,"vxcz":5,"cxiazk":7,"qwezcx":26,'aasddasdas':5}
 #newlist = dicsort(tstdic).insertsort()
@@ -50,23 +78,6 @@ def article_to_hash(article):
 					alpha_hash[index][word] = 1
 	return alpha_hash
 
-'''def article_to_hash_pro(article):
-	alpha_list = [ [ ] for i in range(26) ]
-	alpha_hash =  [ { } for i in range(26) ]
-	for line in article:
-		linetoken = nltk.word_tokenize(line)
-		for word in linetoken:
-			word = word.lower()
-			index = gethash(word)
-			if word in alpha_list[index]:
-				word_index = alpha_list[index].index(word)
-				word_count = alpha_list[index][word_index+1] + 1
-				alpha_list[index][word_index+1] += 1
-			else:
-				alpha_list[index].append(word)
-				alpha_list[index].append(1)
-	return alpha_list'''
-
 import os
 def hash_to_file(alpha_hash):
 	save_dir = './bible/'
@@ -77,7 +88,7 @@ def hash_to_file(alpha_hash):
 		fw = open(filename,'w')	
 		newlist = dicsort(alpha_hash[loop]).insertsort()
 		for i in newlist:
-			towrite = i+' '+str(alpha_hash[loop][i])
+			towrite = i+'\t'+str(alpha_hash[loop][i])
 			fw.write(towrite+'\n')
 		fw.close()
 
@@ -88,4 +99,4 @@ if __name__ == '__main__':
 	print 'article created!'
 	alpha_hash = article_to_hash(article)
 	print "alpha_hash finish"
-	#hash_to_file(alpha_hash)
+	hash_to_file(alpha_hash)
