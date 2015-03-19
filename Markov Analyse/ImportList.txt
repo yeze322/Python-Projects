@@ -1,0 +1,13 @@
+Adam Bede(亚当.比德).txt
+Barnaby Rudge(巴纳比·卢杰).TXT
+Bleak House(凄凉的房子).txt
+David Copperfield(大卫.科波维尔).txt
+Jane Eyre(简·爱).TXT
+Little Dorrit(小杜丽).txt
+Martin Chuzzlewit(玛丁.朱泽尔维特).txt
+Middlemarch(米德尔.马齐).txt
+Mill on the Floss(弗罗斯河上的磨房).txt
+Nicholas Nickleby(尼古拉斯.尼克利比).txt
+Pickwick Papers(匹克威克外传).txt
+The_Holy_Bible.txt
+The Old Curiosity Shop(古玩店).txt
