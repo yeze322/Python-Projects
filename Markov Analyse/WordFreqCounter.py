@@ -52,7 +52,7 @@ def article_to_hash(article):
 
 import os
 def hash_to_file(alpha_hash):
-	save_dir = './bible/'
+	save_dir = './WordList/'
 	if not os.path.exists(save_dir):
 		os.mkdir(save_dir)
 	for loop in range(255):
@@ -60,11 +60,14 @@ def hash_to_file(alpha_hash):
 			continue
 		newlist = c_DictSorter(alpha_hash[loop]).qsort()
 		filename = save_dir + str(loop)+'.txt'
-		fw = open(filename,'w')	
+		str_FreqName = save_dir + str(loop)+'_Freq.txt'
+		fw_Word = open(filename,'w')
+		fw_Freq = open(str_FreqName,'w')
 		for i in newlist:
-			towrite = i+'\t'+str(alpha_hash[loop][i])
-			fw.write(towrite+'\n')
-		fw.close()
+			fw_Word.write(i+'\n')
+			fw_Freq.write(str(alpha_hash[loop][i])+'\n')
+		fw_Word.close()
+		fw_Freq.close()
 
 import cProfile
 import pstats
