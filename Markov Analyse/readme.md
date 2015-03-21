@@ -1,5 +1,27 @@
 # Use Markov Chain To Analyze And Predict Sentece#
 
+# UPDATE 2015/03/22 #
+
+I come out with the sort on tail words!
+
+calculate the length of the tail_word_diction, if it's bigger than a number ( maybe 80 ~ 120 ), then use qsort; else, use insertsort!
+
+I'm quite saitisfied with the improvement! it costs only 30% time now!
+
+About choosing the number, I write a test program called 'Qsort VS Insertsort.py'
+
+It shows that when N between 80~110, the result will be best!
+
+Considering insertsort() is unstable, I choos the lower bound 80
+
+This example teaches me: try to use different method to solve problem!
+
+I will try merge sort later!
+
+What's more, about the randint() function , I delete it, and the program runs faster...
+
+Rand() is useless, because our dicion is not very sorted ( it's a dic, you can calculate the probability of after put all words the dic is sorted... compared with the set in C++ based on binary tree, this is almost impossible)
+
 # UPDATA 2015/03/9 #
 
 Noe I finish most of this model!

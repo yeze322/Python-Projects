@@ -147,8 +147,8 @@ class c_SentencePredictor:
 		int_RandWordLine = self.f_RandALine(lines_WordList)
 		return int_RandWordLine[:-1]
 
+if __name__ == "__main__":
+	Pdt = c_SentencePredictor()
+	word_Rand = Pdt.f_RandAWord()
 
-Pdt = c_SentencePredictor()
-word_Rand = Pdt.f_RandAWord()
-
-Pdt.f_SentencePredictor_Rand([word_Rand],1000)
+	Pdt.f_SentencePredictor_Rand([word_Rand],1000)

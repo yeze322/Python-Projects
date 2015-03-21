@@ -83,14 +83,14 @@ class c_DictSorter:
 		self.qsort_stack = [  ]
 	def unsorted(self):
 		return self.list_DictKeys
-	def __quicksort_random__(self,top,end):
+	def __quicksort__(self,top,end):
 		#dictst1 = {'e1':12,'e2':12,'e3':12,'a':12,'b':7,'asd':7,'c':55,'d':7,'e':23}
 		if top > end:
 			return
-		index_rand = random.randint(top,end)
+		index_rand = top #norandom random.randint(top,end)
 		flag = self.list_DictKeys[index_rand] ;
-		self.list_DictKeys[index_rand] = self.list_DictKeys[top]
-		self.list_DictKeys[top] = flag
+		#norandom self.list_DictKeys[index_rand] = self.list_DictKeys[top]
+		#norandom self.list_DictKeys[top] = flag
 		i = top ; j = end
 		write_top = top ; write_end = end
 		list_Equal = []
@@ -135,7 +135,7 @@ class c_DictSorter:
 			top_end = self.qsort_stack.pop()
 			top = top_end[0]
 			end = top_end[1]
-			self.__quicksort_random__( top , end )
+			self.__quicksort__( top , end )
 		return self.list_DictKeys
 
 	def insertsort(self):
@@ -224,6 +224,8 @@ def f_AsciiHash_to_File_Sorted_Splited(c_Markov): # don't want to filter
 	str_SavePath_Father = './Markov_AsciiHash/'
 	if not os.path.exists(str_SavePath_Father):
 		os.mkdir(str_SavePath_Father)
+	pr = cProfile.Profile()
+	pr.enable()
 	for index_Ascii in range(256):
 		if list_AsciiHash[index_Ascii] == { }:
 			continue
@@ -255,7 +257,7 @@ def f_AsciiHash_to_File_Sorted_Splited(c_Markov): # don't want to filter
 		fp8_NW_AND_Freq = open(str_Fname8_NW_AND_Freq,'w')#yezetst
 		fp9_Whole = open(str_Fname9_Whole,'w')#yezetst
 
-		list_Key_Sorted = c_DictSorter(dict_KeyFreq_thisAcii).qsort() 
+		list_Key_Sorted = c_DictSorter(dict_KeyFreq_thisAcii).qsort()
 		#this one use qsort is write.
 		for str_Key in list_Key_Sorted:
 			list_AB = c_MarkovTool().f_cut_glue(str_Key)
@@ -267,7 +269,13 @@ def f_AsciiHash_to_File_Sorted_Splited(c_Markov): # don't want to filter
 			fp5_K_AND_Freq.write(str_Key+'\t'+str(int_AB_Freq)+'\n')#yezetst
 			fp9_Whole.write(str_Key+'|'+str(int_AB_Freq)+'|')#yezetst
 			dict_NextWord = dict_AsciiHash_DICT[str_Key]
-			list_NextWord_sorted = c_DictSorter(dict_NextWord).unsorted()
+			
+
+			if len(dict_NextWord) < 80:
+				list_NextWord_sorted = c_DictSorter(dict_NextWord).insertsort()
+			else:
+				list_NextWord_sorted = c_DictSorter(dict_NextWord).qsort()
+
 			#here puzzled me. which sort to use? this one is small!
 
 			for tail in list_NextWord_sorted:
@@ -290,6 +298,10 @@ def f_AsciiHash_to_File_Sorted_Splited(c_Markov): # don't want to filter
 		fp8_NW_AND_Freq.close()#yezetst
 		fp9_Whole.close()#yezetst
 
+	pr.disable()
+	ps = pstats.Stats(pr).sort_stats("cumulative")
+	ps.print_stats()
+
 
 
 import cProfile
@@ -306,14 +318,5 @@ if __name__ == '__main__' :
 	c_Markov = c_MarkovCreater(str_ListFileName)
 	list_AsciiHash = c_Markov.list_AsciiHash
 	dict_KeyFreq = c_Markov.dict_KeyFreq
-	#f_AsciiHash_to_File_Sorted_Splited(c_Markov)
-
-	pr = cProfile.Profile()
-	pr.enable()
-
 	f_AsciiHash_to_File_Sorted_Splited(c_Markov)
-
-	pr.disable()
-	ps = pstats.Stats(pr).sort_stats("cumulative")
-	ps.print_stats()
 	print 3

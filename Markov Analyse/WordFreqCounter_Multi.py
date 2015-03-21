@@ -78,8 +78,8 @@ import pstats
 
 if __name__ == '__main__':
 	FileName_ImportList = 'ImportList.txt'
-	alpha_hash = f_Articles_to_hash(FileName_ImportList)
-	#cProfile.run('alpha_hash = f_Articles_to_hash(list_FileName)','result')
-	#ps = pstats.Stats('result')
-	#ps.strip_dirs().sort_stats("cumulative",'time').print_stats()
+	#alpha_hash = f_Articles_to_hash(FileName_ImportList)
+	cProfile.run('alpha_hash = f_Articles_to_hash(FileName_ImportList)','result')
+	ps = pstats.Stats('result')
+	ps.strip_dirs().sort_stats("cumulative",'time').print_stats()
 	hash_to_file(alpha_hash)
