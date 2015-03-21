@@ -2,176 +2,44 @@ import linecache
 import nltk
 import os
 import random
-
-def f_FileTokenizer(str_FileName,str_Save_FileName):
-	lines_Article = linecache.getlines(str_FileName)
-	fp_File = open(str_Save_FileName,'w')
-	for line in lines_Article:
-		line = nltk.word_tokenize(line)
-		for str_Word in line:
-			fp_File.write(str_Word.lower()+'\n')
-	fp_File.close()
-	return str_Save_FileName
-
-class c_MarkovTool:
-	def __init__(self):
-		self.str_const_GLUE = '_+_'
-	def f_glue_word(self,str_Word1,str_Word2):
-		return str_Word1+self.str_const_GLUE+str_Word2
-	def f_cut_glue(self,str_Word):
-		int_Index = str_Word.find(self.str_const_GLUE)
-		str_Word1 = str_Word[ : int_Index]
-		str_Word2 = str_Word[int_Index+len(self.str_const_GLUE):]
-		return [str_Word1,str_Word2]
-	def word_tokenizer(self,line):
-		blankset = '\n\r\b\t\f\v '
-		token = []
-		word = ""
-		for char_i in line:
-			if char_i.isalpha() or char_i.isdigit():
-				word = word + char_i
-				continue
-			if char_i in blankset:
-				if word != "" :
-					token.append(word)
-					word = ""
-				continue
-			if word != "":
-				token.append(word)
-				word = ""
-			token.append(char_i)
-		return token
-	def f_getASCII(self,str_Word):
-		int_Index = ord(str_Word[0])
-		return int_Index
+from c_MarkovTool import *
+from c_DictSorter import *
 
 class c_MarkovCreater:
 	SRCPATH = 'LanguaeTextRepertory/'
+
 	def __init__(self,str_ListFileName):
 		lines_Filename = linecache.getlines(str_ListFileName)
 		for i in lines_Filename:
 			print i
-		self.list_AsciiHash = [ { } for i in range(256) ]
-		self.dict_KeyFreq = { }
-		self.list_KeyFreq_Dict_asciihash =  [ { }  for i in range (256) ]
+		self.list_AsciiHash = [ { } for i in range(256) ] #this dicion costs 3.5s, I decide to use a two stage HASH
+		#self.dict_KeyFreq = { } #useless	#self.dict_KeyFreq[str_Key] = 1 #useless	#self.dict_KeyFreq[str_Key] += 1#useless		
+		self.list_KeyFreq_Dict_asciihash =  [ { }  for i in range (256) ] #this diction costs 1.2s
+
 		for FileName in lines_Filename:
-			FileName = self.SRCPATH + FileName.strip()+'_tokenized.txt'
+			FileName = self.SRCPATH + FileName[:-1]+'_tokenized.txt'
 			lines_Word = linecache.getlines(FileName)
 			lines_Word.append('EOF')# EOF
+			D_Ascii = { } #this will save time about 0.1s
+			D_Freq = { } #avoid create&destroy a pointer in for loop 
 			for index_Word in range(len(lines_Word)-2):
-				index_AsciiHash = ord(lines_Word[index_Word][0])
-				str_Key = c_MarkovTool().f_glue_word(lines_Word[index_Word][:-1],lines_Word[index_Word+1][:-1])
-				str_NextWord = lines_Word[index_Word+2][:-1]
-				if str_Key not in self.list_AsciiHash[index_AsciiHash]:
-					#new one create
-					self.list_AsciiHash[index_AsciiHash][str_Key] = { str_NextWord : 1 }
-					self.dict_KeyFreq[str_Key] = 1
-					self.list_KeyFreq_Dict_asciihash[index_AsciiHash][str_Key] = 1
+				index_AsciiHash = ord(lines_Word[index_Word][0])  #this one costs 1.4 s
+				str_Key = lines_Word[index_Word][:-1] + str_const_GLUE + lines_Word[index_Word+1][:-1] #costs 1.4s
+				#str_Key = f_glue_word(lines_Word[index_Word][:-1],lines_Word[index_Word+1][:-1]) #costs  2.5s
+				str_NextWord = lines_Word[index_Word+2][:-1] #costs 0.5s
+				D_Ascii = self.list_AsciiHash[index_AsciiHash] #datatype -- dict_AciiHash_Dict
+				D_Freq = self.list_KeyFreq_Dict_asciihash[index_AsciiHash] #costs 0.5s
+
+				if str_Key not in D_Ascii: #put "not in" in front of "in",save 0.4s, because in will cause extra judge
+					D_Ascii[str_Key] = { str_NextWord : 1 }#costs 1.4s
+					D_Freq[str_Key] = 1#555
+					
 				else:
-					#add frequence
-					if str_NextWord in self.list_AsciiHash[index_AsciiHash][str_Key]:
-						self.list_AsciiHash[index_AsciiHash][str_Key][str_NextWord]+=1
-					else:
-						self.list_AsciiHash[index_AsciiHash][str_Key][str_NextWord]=1
-					self.dict_KeyFreq[str_Key] += 1
-					self.list_KeyFreq_Dict_asciihash[index_AsciiHash][str_Key] += 1
-
-class c_DictSorter:
-	def __init__(self,diction):
-		self.diction = diction
-		self.list_DictKeys = diction.keys()
-		self.qsort_stack = [  ]
-	def unsorted(self):
-		return self.list_DictKeys
-	def __quicksort__(self,top,end):
-		#dictst1 = {'e1':12,'e2':12,'e3':12,'a':12,'b':7,'asd':7,'c':55,'d':7,'e':23}
-		if top > end:
-			return
-		index_rand = top #norandom random.randint(top,end)
-		flag = self.list_DictKeys[index_rand] ;
-		#norandom self.list_DictKeys[index_rand] = self.list_DictKeys[top]
-		#norandom self.list_DictKeys[top] = flag
-		i = top ; j = end
-		write_top = top ; write_end = end
-		list_Equal = []
-		list_Equal.append(flag)
-
-		while(i<j):
-			while(i<j):
-				if self.diction[self.list_DictKeys[j]] < self.diction[flag]:
-					self.list_DictKeys[write_end] = self.list_DictKeys[j]
-					j -= 1
-					write_end-=1
-				elif self.diction[self.list_DictKeys[j]] == self.diction[flag]:
-					list_Equal.append(self.list_DictKeys[j])
-					j-=1
-				else:
-					break
-			self.list_DictKeys[write_top] = self.list_DictKeys[j]
-			self.list_DictKeys[i] = self.list_DictKeys[j]
-
-			while(i<j):
-				if self.diction[self.list_DictKeys[i]]>self.diction[flag]:
-					self.list_DictKeys[write_top] = self.list_DictKeys[i]
-					i+=1
-					write_top += 1	
-				elif self.diction[self.list_DictKeys[i]] == self.diction[flag]:
-					list_Equal.append(self.list_DictKeys[i])
-					i += 1
-				else:
-					break
-			self.list_DictKeys[write_end] = self.list_DictKeys[i]
-			self.list_DictKeys[j] =  self.list_DictKeys[i]
-
-		len_list_Equal = len(list_Equal)
-		for index_Equal in range(len_list_Equal):
-			self.list_DictKeys[index_Equal + write_top] = list_Equal[index_Equal]
-		self.qsort_stack.append( [ top, write_top-1 ] )
-		self.qsort_stack.append( [ write_end+1, end ] )
-
-	def qsort(self):
-		self.qsort_stack.append([0,len(self.list_DictKeys)-1])
-		while ( self.qsort_stack != [ ] ):
-			top_end = self.qsort_stack.pop()
-			top = top_end[0]
-			end = top_end[1]
-			self.__quicksort__( top , end )
-		return self.list_DictKeys
-
-	def insertsort(self):
-		if self.list_DictKeys == []:
-			return []
-		newlist = [self.list_DictKeys[0]]
-		for i in self.list_DictKeys[1:] :
-			judge = 0
-			for flag in newlist:
-				if self.diction[i] > self.diction[flag]:
-					newlist.insert(newlist.index(flag),i)
-					judge = 1
-					break
-			if judge == 0:
-				newlist.append(i)			
-		return newlist
-	def __merge__(self,top,end):
-		pass
-	def mergesort(self):
-		if self.list_DictKeys == []:
-			return []
-		newlist = self.list_DictKeys
-	def bubblesort(self):
-		if self.list_DictKeys == []:
-			return []
-		for i in range(len(self.list_DictKeys)-1,-1,-1):
-			for j in range(0,i):
-				if self.diction[self.list_DictKeys[j]] < self.diction[self.list_DictKeys[j+1]]:
-					temp = self.list_DictKeys[j]
-					self.list_DictKeys[j] = self.list_DictKeys[j+1]
-					self.list_DictKeys[j+1] = temp
-		return self.list_DictKeys
-
-
-
-
+					if str_NextWord in D_Ascii[str_Key]:#666
+						D_Ascii[str_Key][str_NextWord]+=1#666
+					else:#666
+						D_Ascii[str_Key][str_NextWord]=1#666
+					D_Freq[str_Key] += 1#555
 
 #dictst1 = {'12_1':12,'12_2':12,'12_3':12,'12_4':12,'b7':7,'asd7':7,'c55':55,'d7':7,'e23':23}
 #print c_DictSorter(dictst1).bubblesort()
@@ -224,8 +92,6 @@ def f_AsciiHash_to_File_Sorted_Splited(c_Markov): # don't want to filter
 	str_SavePath_Father = './Markov_AsciiHash/'
 	if not os.path.exists(str_SavePath_Father):
 		os.mkdir(str_SavePath_Father)
-	pr = cProfile.Profile()
-	pr.enable()
 	for index_Ascii in range(256):
 		if list_AsciiHash[index_Ascii] == { }:
 			continue
@@ -260,7 +126,7 @@ def f_AsciiHash_to_File_Sorted_Splited(c_Markov): # don't want to filter
 		list_Key_Sorted = c_DictSorter(dict_KeyFreq_thisAcii).qsort()
 		#this one use qsort is write.
 		for str_Key in list_Key_Sorted:
-			list_AB = c_MarkovTool().f_cut_glue(str_Key)
+			list_AB = f_cut_glue(str_Key)
 			fp1_K_A.write(list_AB[0]+'\n')#yezetst
 			fp2_K_B.write(list_AB[1]+'\n')#yezetst
 			fp3_K_AB.write(str_Key+'\n')#yezetst
@@ -298,10 +164,6 @@ def f_AsciiHash_to_File_Sorted_Splited(c_Markov): # don't want to filter
 		fp8_NW_AND_Freq.close()#yezetst
 		fp9_Whole.close()#yezetst
 
-	pr.disable()
-	ps = pstats.Stats(pr).sort_stats("cumulative")
-	ps.print_stats()
-
 
 
 import cProfile
@@ -310,13 +172,14 @@ import pstats
 
 if __name__ == '__main__' :
 	str_ListFileName = 'ImportList.txt'
-	#str_FileName = 'The_Holy_Bible.txt'
-	#savefilename = 'The_Holy_Bible_tokenize.txt'
-	#savefilename = f_FileTokenizer(str_FileName,savefilename)
-	#c_Markov = c_MarkovCreater(savefilename)
 
+	pr = cProfile.Profile() #123
+	pr.enable() #123
 	c_Markov = c_MarkovCreater(str_ListFileName)
-	list_AsciiHash = c_Markov.list_AsciiHash
-	dict_KeyFreq = c_Markov.dict_KeyFreq
-	f_AsciiHash_to_File_Sorted_Splited(c_Markov)
+	pr.disable() #123
+	ps = pstats.Stats(pr).sort_stats("cumulative") #123
+	ps.print_stats() #123
+	#list_AsciiHash = c_Markov.list_AsciiHash
+	#dict_KeyFreq = c_Markov.dict_KeyFreq
+	#f_AsciiHash_to_File_Sorted_Splited(c_Markov)
 	print 3

@@ -20,10 +20,10 @@ def f_WordSearch_Single(word,bool_IfNeedFreq = False):
 		return int(line_WordFreq.strip())
 	else:
 		return True
-from MarkovLibCreater_Multi import c_MarkovTool
+import c_MarkovTool
 
 def f_MarkovNextWord(word1,word2):
-	str_WordKey = c_MarkovTool().f_glue_word(word1,word2)
+	str_WordKey = c_MarkovTool.f_glue_word(word1,word2)
 	str_MarkovLibDir = f_GetAsciiStr(str_WordKey)
 	str_SearchPath = str_LibPath_Markov + str_MarkovLibDir + '/'
 
@@ -33,7 +33,7 @@ def f_MarkovNextWord(word1,word2):
 	except:
 		return [ ]
 	line_TailsMixFreq = getline(str_SearchPath + 'NextWord.txt',index_WordKey+1)
-	list_TailWords = c_MarkovTool().word_tokenizer(line_TailsMixFreq)
+	list_TailWords = c_MarkovTool.word_tokenizer(line_TailsMixFreq)
 
 	return list_TailWords
 
@@ -151,4 +151,4 @@ if __name__ == "__main__":
 	Pdt = c_SentencePredictor()
 	word_Rand = Pdt.f_RandAWord()
 
-	Pdt.f_SentencePredictor_Rand([word_Rand],1000)
+	Pdt.f_SentencePredictor_Rand(["we","shouldn"],1000)

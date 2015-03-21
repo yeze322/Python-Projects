@@ -42,7 +42,9 @@ def f_Articles_to_hash(list_FileName):
 		article = getlines(FileName)
 		for line in article:
 			#linetoken = nltk.word_tokenize(line)
-			linetoken = word_tokenizer(line[:-1])
+			linetoken = word_tokenizer(line)
+			if linetoken == []:
+				continue
 			for word in linetoken:
 				word = word.lower()
 				fw.write(word+'\n')
