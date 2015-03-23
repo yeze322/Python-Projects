@@ -24,7 +24,7 @@ class c_MarkovCreater:
 			D_Freq = { } #avoid create&destroy a pointer in for loop 
 			for index_Word in range(len(lines_Word)-2):
 				index_AsciiHash = ord(lines_Word[index_Word][0])  #this one costs 1.4 s
-				str_Key = lines_Word[index_Word][:-1] + str_const_GLUE + lines_Word[index_Word+1][:-1] #costs 1.4s
+				str_Key = lines_Word[index_Word][0:-1] + str_const_GLUE + lines_Word[index_Word+1][0:-1] #costs 1.4s
 				#str_Key = f_glue_word(lines_Word[index_Word][:-1],lines_Word[index_Word+1][:-1]) #costs  2.5s
 				str_NextWord = lines_Word[index_Word+2][:-1] #costs 0.5s
 				D_Ascii = self.list_AsciiHash[index_AsciiHash] #datatype -- dict_AciiHash_Dict
@@ -173,13 +173,11 @@ import pstats
 if __name__ == '__main__' :
 	str_ListFileName = 'ImportList.txt'
 
+	c_Markov = c_MarkovCreater(str_ListFileName)
 	pr = cProfile.Profile() #123
 	pr.enable() #123
-	c_Markov = c_MarkovCreater(str_ListFileName)
+	f_AsciiHash_to_File_Sorted_Splited(c_Markov)
 	pr.disable() #123
 	ps = pstats.Stats(pr).sort_stats("cumulative") #123
 	ps.print_stats() #123
-	#list_AsciiHash = c_Markov.list_AsciiHash
-	#dict_KeyFreq = c_Markov.dict_KeyFreq
-	#f_AsciiHash_to_File_Sorted_Splited(c_Markov)
 	print 3

@@ -4,7 +4,7 @@ import nltk
 from linecache import getlines,getline
 from MarkovLibCreater_Multi import c_DictSorter
 # = [[] for i in range(26)]
-SRCPATH = 'LanguaeTextRepertory/'
+SRCPATH = 'LanguageTextRepertory/'
 def gethash(word):
 	index = ord(word[0])
 	index -=ord('a')
