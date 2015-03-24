@@ -79,7 +79,6 @@ class HuffmanCoding:
 		base1 = base+'0'
 		l2 = listpart[index+1:]
 		base2 = base + '1'
-		raw_input(index)
 		self.huff2(l1,base1)
 		self.huff2(l2,base2)
 

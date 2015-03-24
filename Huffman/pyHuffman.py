@@ -3,6 +3,7 @@ from linecache import getlines
 
 class HuffmanCoding:
 	def __init__(self,fname_Read):
+		self.filename = fname_Read
 		self.article = getlines(fname_Read)
 		self.dict_AciiChar = {} #{99:freq ...}
 		self.list_SortedChar = [] #{99,10,105, ...}
@@ -99,11 +100,18 @@ class HuffmanCoding:
 			float_Averlen += probability*len(coding)
 		fp_write.write("\n%d\t\t%f"%(self.totalword,float_Averlen))
 		fp_write.close()
-	def encoder(self):
+
+	def writefile(self):
 		diction = self.dict_HuffmanCoding
+		fp = open(self.filename+'.huff','w')
+		for line in self.article:
+			for char in line:
+				fp.write(diction[ord(char)])
+		fp.close()
 
 filename = '99.txt'
 
 h1 = HuffmanCoding(filename)
 h1.Create()
 h1.wirtecode('huffman.txt')
+h1.writefile()
