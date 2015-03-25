@@ -109,9 +109,9 @@ class HuffmanCoding:
 				fp.write(diction[ord(char)])
 		fp.close()
 
-filename = '99.txt'
+filename = raw_input().strip() 
 
 h1 = HuffmanCoding(filename)
 h1.Create()
-h1.wirtecode('huffman.txt')
+h1.wirtecode(filename+'.huff.analyse')
 h1.writefile()
